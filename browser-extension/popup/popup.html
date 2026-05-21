@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <span class="popup-logo">🛡️</span>
+      <h1 class="popup-title">Focus Guard</h1>
+    </div>
+
+    <div class="popup-status" id="status-section">
+      <div class="status-row">
+        <span class="status-label">Chế độ tập trung</span>
+        <label class="toggle">
+          <input type="checkbox" id="focus-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p class="status-text" id="status-text">Đang tắt — Xem tự do</p>
+    </div>
+
+    <div class="popup-connection">
+      <span class="conn-dot" id="conn-dot"></span>
+      <span class="conn-text" id="conn-text">Desktop App: Đang kiểm tra...</span>
+    </div>
+
+    <div class="popup-info">
+      <p>Khi bật: video giải trí trên YouTube sẽ bị chặn.</p>
+      <p>Video giáo dục vẫn xem được bình thường.</p>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

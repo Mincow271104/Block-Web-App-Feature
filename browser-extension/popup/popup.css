@@ -1,0 +1,105 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 300px;
+  font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+  background: #0f0f1a;
+  color: #e0e0f0;
+}
+
+.popup-container { padding: 20px; }
+
+/* Header */
+.popup-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.popup-logo { font-size: 28px; }
+.popup-title {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Status section */
+.popup-status {
+  background: rgba(30, 30, 55, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.status-label { font-size: 14px; font-weight: 600; }
+.status-text {
+  font-size: 12px;
+  color: #8888aa;
+  transition: color 0.3s;
+}
+.status-text.active { color: #34d399; }
+
+/* Toggle switch */
+.toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
+.toggle input { display: none; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #333;
+  border-radius: 24px;
+  transition: background 0.3s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+.toggle input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* Connection */
+.popup-connection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(20, 20, 40, 0.6);
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.conn-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #555;
+  transition: background 0.3s;
+}
+.conn-dot.connected { background: #34d399; box-shadow: 0 0 6px #34d399; }
+.conn-dot.disconnected { background: #f87171; }
+.conn-text { font-size: 11px; color: #777; }
+
+/* Info */
+.popup-info {
+  padding-top: 4px;
+}
+.popup-info p {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 2px;
+}

@@ -1,0 +1,27 @@
+{
+  "whitelist": [
+    { "name": "Khan Academy", "id": "UC4a-Gbdw7vOaccHmFo40b9g" },
+    { "name": "3Blue1Brown", "id": "UCYO_jab_esuFRV4b17AJtAw" },
+    { "name": "CrashCourse", "id": "UCX6b17PVsYBQ0ip5gyeme-Q" },
+    { "name": "Veritasium", "id": "UCHnyfMqiRRG1u-2MsSQLbXA" },
+    { "name": "TED", "id": "UCAuUUnT6oDeKwE6v1NGQxug" },
+    { "name": "TED-Ed", "id": "UCsooa4yRKGN_zEE8iknghZA" },
+    { "name": "MIT OpenCourseWare", "id": "UCEBb1b_L6zDS3xTUrIALZOw" },
+    { "name": "freeCodeCamp.org", "id": "UC8butISFwT-Wl7EV0hUK0BQ" },
+    { "name": "Fireship", "id": "UCsBjURrPoezykLs9EqgamOA" },
+    { "name": "Kurzgesagt – In a Nutshell", "id": "UCsXVk37bltHxD1rDPwtNM8Q" },
+    { "name": "Numberphile", "id": "UCoxcjq-8xIDTYp3uz647V5A" },
+    { "name": "SmarterEveryDay", "id": "UC6107grRI4m0o2-emgoDnAA" },
+    { "name": "Vsauce", "id": "UC6nSFpj9HTCZ5t-N3Rm3-HA" },
+    { "name": "MinutePhysics", "id": "UCUHW94eEFW7hkUMVaZz4eDg" },
+    { "name": "Computerphile", "id": "UC9-y-6csu5WGm29I7JiwpnA" },
+    { "name": "The Organic Chemistry Tutor", "id": "UCEWpbFLzoYGPfuWUMFPSaoA" },
+    { "name": "Professor Leonard", "id": "UCoHhuummRZaIVX7bD4t2czg" },
+    { "name": "Traversy Media", "id": "UC29ju8bIPH5as8OGnQzwJyA" },
+    { "name": "The Coding Train", "id": "UCvjgXvBlISQQN_ign35XpXQ" },
+    { "name": "Academind", "id": "UCSJbGtTlrDami-tDGPUV9-w" },
+    { "name": "Bro Code", "id": "UC4SVo0Ue36XCfOyb5Lh1viQ" },
+    { "name": "Web Dev Simplified", "id": "UCFbNIlppjAuEX4znoulh0Cw" }
+  ],
+  "blacklist": []
+}

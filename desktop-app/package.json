@@ -1,0 +1,15 @@
+{
+  "name": "focus-guard-desktop",
+  "version": "1.0.0",
+  "description": "Focus Guard Desktop — Điều khiển chế độ tập trung",
+  "main": "main.js",
+  "scripts": {
+    "start": "node node_modules/electron/cli.js ."
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

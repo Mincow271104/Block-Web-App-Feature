@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Guard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Title bar -->
+    <div class="titlebar" id="titlebar">
+      <span class="titlebar-title">🛡️ Focus Guard</span>
+      <div class="titlebar-btns">
+        <button class="titlebar-btn minimize" id="btn-minimize">─</button>
+        <button class="titlebar-btn close" id="btn-close">✕</button>
+      </div>
+    </div>
+
+    <!-- Screen 1: Extension Check (shown when extension not detected) -->
+    <div class="content" id="screen-check">
+      <div class="hero">
+        <div class="shield">🔌</div>
+        <h1 class="app-name">Extension Chưa Kết Nối</h1>
+        <p class="app-desc">Bạn cần cài đặt Extension trên trình duyệt để sử dụng Focus Guard</p>
+      </div>
+
+      <div class="check-section">
+        <div class="steps">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <span class="step-text">Mở Chrome → <strong>chrome://extensions</strong></span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <span class="step-text">Bật <strong>Developer mode</strong> (góc phải trên)</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <span class="step-text">Click <strong>Load unpacked</strong> → chọn thư mục extension</span>
+          </div>
+        </div>
+
+        <div class="check-buttons">
+          <button class="action-btn primary" id="btn-open-folder">
+            📂 Mở thư mục Extension
+          </button>
+          <button class="action-btn secondary" id="btn-recheck">
+            🔄 Kiểm tra lại
+          </button>
+        </div>
+
+        <p class="check-status" id="check-status">Đang chờ kết nối extension...</p>
+      </div>
+    </div>
+
+    <!-- Screen 2: Main App (shown when extension connected) -->
+    <div class="content hidden" id="screen-main">
+      <div class="hero">
+        <div class="shield" id="shield">🛡️</div>
+        <h1 class="app-name">Focus Guard</h1>
+        <p class="app-desc">Chặn video giải trí — Tập trung học tập</p>
+      </div>
+
+      <div class="toggle-section">
+        <p class="toggle-label" id="mode-label">Chế độ tập trung: TẮT</p>
+        <button class="focus-btn" id="focus-btn">
+          <span class="btn-text">Bật Focus Mode</span>
+        </button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item stat-connected">
+          <span class="stat-icon">✅</span>
+          <span class="stat-text" id="clients-count">Extension: 1 kết nối</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📡</span>
+          <span class="stat-text">WebSocket: Port 8765</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
