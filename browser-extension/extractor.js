@@ -1,6 +1,7 @@
 /* ===== Focus Guard — YouTube Data Extractor =====
    Runs in MAIN world (page context).
    Communicates with content.js (ISOLATED world) via window events.
+   Extracts: videoId, title, author, channelId, category, keywords, description.
 */
 (function () {
   'use strict';
@@ -46,7 +47,8 @@
             channelId: vd.channelId || '',
             author: vd.author || '',
             category: mf.category || '',
-            keywords: vd.keywords || []
+            keywords: vd.keywords || [],
+            description: (vd.shortDescription || '').substring(0, 500)
           })
         }));
       }
@@ -62,7 +64,6 @@
 
   // On SPA navigation, YouTube needs time to update player data
   document.addEventListener('yt-navigate-finish', () => {
-    // Staggered retries — player data updates at different times
     setTimeout(extractAndSend, 500);
     setTimeout(extractAndSend, 1500);
     setTimeout(extractAndSend, 3000);

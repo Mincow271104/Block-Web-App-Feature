@@ -12,10 +12,9 @@
     'Gaming', 'Music', 'Entertainment', 'Comedy',
     'Film & Animation', 'Sports', 'Movies', 'Shows', 'Trailers'
   ];
-  const ALLOWED_CATEGORIES = [
-    'Education', 'Science & Technology', 'Howto & Style',
-    'News & Politics', 'Nonprofits & Activism', 'Travel & Events'
-  ];
+  let allowedCategories = ['Education', 'Science & Technology'];
+
+  const SOCIAL_MEDIA_DOMAINS = ['facebook.com', 'twitter.com', 'x.com', 'tiktok.com', 'threads.net', 'instagram.com'];
 
   let channelWhitelist = [];
   let channelBlacklist = [];
@@ -29,15 +28,38 @@
     .then(d => { channelWhitelist = d.whitelist || []; channelBlacklist = d.blacklist || []; })
     .catch(() => {});
 
-  chrome.runtime.sendMessage({ type: 'GET_FOCUS_MODE' }, (res) => {
+  chrome.storage.local.get(['focusMode', 'allowedCategories'], (res) => {
     if (chrome.runtime.lastError) return;
-    if (res) { focusMode = res.focusMode; checkPage(); }
+    if (res.allowedCategories) allowedCategories = res.allowedCategories;
+    if (res.focusMode !== undefined) {
+      focusMode = res.focusMode;
+      checkPage();
+    }
   });
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'FOCUS_MODE_CHANGED') {
       focusMode = msg.enabled;
       focusMode ? checkPage() : cleanup();
+    }
+    // Receive AI classification result
+    if (msg.type === 'CLASSIFY_RESULT' && msg.videoId) {
+      console.log('[FocusGuard] AI result for', msg.videoId, ':', msg.result, msg.reason);
+      cache[msg.videoId] = { result: msg.result, data: cache[msg.videoId]?.data || {} };
+      if (msg.videoId === currentVideoId) {
+        apply(msg.result, cache[msg.videoId].data);
+      }
+    }
+    // Receive Settings update
+    if (msg.type === 'SETTINGS_UPDATED' && msg.allowedCategories) {
+      console.log('[FocusGuard] Allowed categories updated:', msg.allowedCategories);
+      allowedCategories = msg.allowedCategories;
+      // Re-check current video if focus mode is on
+      if (focusMode && currentVideoId) {
+        // Remove from cache to force re-evaluation
+        delete cache[currentVideoId];
+        checkPage();
+      }
     }
   });
 
@@ -61,6 +83,24 @@
   if (document.body) obs.observe(document.body, { subtree: true, childList: true });
 
   /* ===== CORE ===== */
+  function checkAndBlockSocialMedia() {
+    if (!focusMode) return false;
+    const hostname = window.location.hostname;
+    const isSocialMedia = SOCIAL_MEDIA_DOMAINS.some(domain => hostname.includes(domain));
+    if (isSocialMedia) {
+      showSocialOverlay('Mạng xã hội này đã bị khóa trong giờ tập trung.');
+      document.body.style.overflow = 'hidden';
+      return true;
+    }
+    return false;
+  }
+
+  setInterval(() => {
+    if (!focusMode) return;
+    if (checkAndBlockSocialMedia()) return;
+    checkPage();
+  }, 1000);
+
   function getVideoIdFromUrl() {
     return new URLSearchParams(location.search).get('v');
   }
@@ -99,7 +139,20 @@
 
       console.log('[FocusGuard] Video:', d.title, '| Category:', d.category, '| Channel:', d.author);
       const r = classify(d);
-      console.log('[FocusGuard] Result:', r);
+      console.log('[FocusGuard] Tier 1 result:', r);
+
+      if (r === 'UNCERTAIN') {
+        // Store data but don't apply yet — send to AI for Tier 2
+        cache[d.videoId] = { result: 'PENDING', data: d };
+        console.log('[FocusGuard] Tier 1 uncertain → sending to AI (Tier 2)...');
+        chrome.runtime.sendMessage({
+          type: 'CLASSIFY_VIDEO',
+          metadata: d
+        }, () => { void chrome.runtime.lastError; });
+        // Show a loading overlay while waiting for AI
+        showLoadingOverlay();
+        return;
+      }
 
       // Cache it
       cache[d.videoId] = { result: r, data: d };
@@ -112,25 +165,32 @@
   });
 
   function classify(d) {
+    // Tier 1: Whitelist check
     if (d.channelId && channelWhitelist.some(c => c.id === d.channelId)) return 'ALLOW';
     if (d.author) {
       const a = d.author.toLowerCase();
       if (channelWhitelist.some(c => c.name.toLowerCase() === a)) return 'ALLOW';
     }
+    // Tier 1: Blacklist check
     if (d.channelId && channelBlacklist.some(c => c.id === d.channelId)) return 'BLOCK';
     if (d.author) {
       const a = d.author.toLowerCase();
       if (channelBlacklist.some(c => c.name.toLowerCase() === a)) return 'BLOCK';
     }
+    // Tier 1: Category check
     if (d.category) {
-      if (ALLOWED_CATEGORIES.includes(d.category)) return 'ALLOW';
+      if (allowedCategories.includes(d.category)) return 'ALLOW';
       if (BLOCKED_CATEGORIES.includes(d.category)) return 'BLOCK';
     }
-    return 'ALLOW';
+
+    // Category is empty or not in either list → UNCERTAIN (needs AI)
+    return 'UNCERTAIN';
   }
 
   function apply(result, data) {
     if (!focusMode) { cleanup(); return; }
+    if (result === 'PENDING') return; // Do nothing, let loading overlay stay
+
     if (result === 'BLOCK') {
       showOverlay(data);
       keepPaused();
@@ -144,6 +204,28 @@
   }
 
   /* ===== OVERLAY ===== */
+  function showLoadingOverlay() {
+    removeOverlay();
+    const container = document.querySelector('#movie_player')
+      || document.querySelector('.html5-video-player')
+      || document.querySelector('#player-container-inner');
+    if (!container) return;
+
+    overlayEl = document.createElement('div');
+    overlayEl.id = 'focusguard-overlay';
+    overlayEl.innerHTML = `
+      <div class="fg-backdrop"></div>
+      <div class="fg-card">
+        <div class="fg-icon">🤖</div>
+        <h2 class="fg-heading">Đang phân tích...</h2>
+        <div class="fg-divider"></div>
+        <p class="fg-msg">AI đang kiểm tra nội dung video này.<br/>Vui lòng đợi...</p>
+      </div>`;
+    container.style.position = 'relative';
+    container.appendChild(overlayEl);
+    keepPaused();
+  }
+
   function showOverlay(data) {
     removeOverlay();
     const container = document.querySelector('#movie_player')
@@ -170,10 +252,20 @@
     container.appendChild(overlayEl);
   }
 
+  function showSocialOverlay(msg) {
+    if (document.getElementById('focusguard-overlay')) return;
+    overlayEl = document.createElement('div');
+    overlayEl.id = 'focusguard-overlay';
+    overlayEl.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;color:white;font-family:sans-serif;';
+    overlayEl.innerHTML = `<div style="text-align:center;"><h1>🚫</h1><h2>${msg}</h2></div>`;
+    document.body.appendChild(overlayEl);
+  }
+
   function removeOverlay() {
     const el = document.getElementById('focusguard-overlay');
     if (el) el.remove();
     overlayEl = null;
+    document.body.style.overflow = '';
   }
 
   function keepPaused() {

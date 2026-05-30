@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net blob:; worker-src blob:; connect-src https://cdn.jsdelivr.net https://storage.googleapis.com; media-src 'self' blob: mediastream:; style-src 'self' 'unsafe-inline';">
   <title>Focus Guard</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,12 +12,13 @@
     <div class="titlebar" id="titlebar">
       <span class="titlebar-title">🛡️ Focus Guard</span>
       <div class="titlebar-btns">
-        <button class="titlebar-btn minimize" id="btn-minimize">─</button>
-        <button class="titlebar-btn close" id="btn-close">✕</button>
+        <button class="titlebar-btn settings" id="btn-settings" title="Cài đặt">⚙️</button>
+        <button class="titlebar-btn minimize" id="btn-minimize" title="Thu nhỏ">─</button>
+        <button class="titlebar-btn close" id="btn-close" title="Đóng">✕</button>
       </div>
     </div>
 
-    <!-- Screen 1: Extension Check (shown when extension not detected) -->
+    <!-- Screen 1: Extension Check -->
     <div class="content" id="screen-check">
       <div class="hero">
         <div class="shield">🔌</div>
@@ -53,19 +55,102 @@
       </div>
     </div>
 
-    <!-- Screen 2: Main App (shown when extension connected) -->
-    <div class="content hidden" id="screen-main">
+    <!-- Screen 2: AI Gate -->
+    <div class="content hidden" id="screen-ai">
       <div class="hero">
-        <div class="shield" id="shield">🛡️</div>
-        <h1 class="app-name">Focus Guard</h1>
-        <p class="app-desc">Chặn video giải trí — Tập trung học tập</p>
+        <div class="shield">🤖</div>
+        <h1 class="app-name">Kết Nối AI</h1>
+        <p class="app-desc">Focus Guard cần AI để phân loại video thông minh</p>
       </div>
 
-      <div class="toggle-section">
-        <p class="toggle-label" id="mode-label">Chế độ tập trung: TẮT</p>
-        <button class="focus-btn" id="focus-btn">
-          <span class="btn-text">Bật Focus Mode</span>
+      <div class="ai-section">
+        <!-- Ollama Status -->
+        <div class="ai-provider" id="ai-ollama">
+          <div class="ai-provider-header">
+            <span class="ai-provider-icon">🦙</span>
+            <span class="ai-provider-name">Ollama (Local)</span>
+            <span class="ai-status-badge" id="ollama-badge">Đang kiểm tra...</span>
+          </div>
+          <p class="ai-provider-desc">Model: <strong>qwen3:14b</strong> — Miễn phí, chạy trên máy</p>
+        </div>
+
+        <!-- Groq Status -->
+        <div class="ai-provider" id="ai-groq">
+          <div class="ai-provider-header">
+            <span class="ai-provider-icon">⚡</span>
+            <span class="ai-provider-name">Groq (Cloud)</span>
+            <span class="ai-status-badge" id="groq-badge">Chưa có key</span>
+          </div>
+          <p class="ai-provider-desc">Model: <strong>Llama 3.3 70B</strong> — Nhanh, cần API key</p>
+          <div class="groq-key-input">
+            <input type="password" id="groq-key" placeholder="Nhập Groq API Key..." autocomplete="off">
+            <button class="action-btn primary small" id="btn-save-groq">Lưu</button>
+          </div>
+        </div>
+
+        <p class="ai-hint" id="ai-status-msg">Cần ít nhất 1 AI provider để tiếp tục.</p>
+
+        <button class="action-btn secondary" id="btn-ai-recheck">
+          🔄 Kiểm tra lại
         </button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Main App -->
+    <div class="content hidden" id="screen-main">
+      <div class="hero hero-compact">
+        <div class="shield" id="shield">🛡️</div>
+        <h1 class="app-name">Focus Guard</h1>
+      </div>
+
+      <!-- Timer Setup (shown when no timer active) -->
+      <div class="timer-setup" id="timer-setup">
+        <div class="manual-focus-container" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <div style="display:flex; flex-direction:column; gap: 4px;">
+            <label class="timer-label" style="font-size: 14px; font-weight: 600; color: #fff;">Chặn Tự Do (Manual)</label>
+            <span style="font-size: 11px; color: #8888aa;">Bật/tắt không giới hạn thời gian</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="manual-focus-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="timer-input-row" style="margin-top: 4px;">
+          <label class="timer-label">⏱️ Thời gian (phút):</label>
+          <input type="number" id="timer-minutes" value="25" min="1" max="480" class="timer-input">
+        </div>
+        <div class="timer-input-row">
+          <label class="timer-label">🔒 Hard Mode:</label>
+          <label class="switch">
+            <input type="checkbox" id="hard-mode-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p class="timer-hint" id="hard-mode-hint">Hard Mode tắt: Bạn có thể tạm dừng hoặc tắt bất cứ lúc nào.</p>
+        <button class="focus-btn" id="btn-start-timer">
+          <span class="btn-text">▶ Bắt Đầu Focus</span>
+        </button>
+      </div>
+
+      <!-- Timer Active (shown when timer is running) -->
+      <div class="timer-active hidden" id="timer-active">
+        <div class="countdown-display">
+          <span class="countdown-time" id="countdown-time">25:00</span>
+          <span class="countdown-label" id="countdown-label">đang tập trung...</span>
+        </div>
+
+        <!-- Webcam Presence Tracking -->
+        <div class="webcam-container" id="webcam-container">
+          <video id="webcam-video" autoplay muted playsinline></video>
+          <div class="webcam-status" id="webcam-status">📷 Đang khởi động cam...</div>
+        </div>
+
+        <div class="timer-controls">
+          <button class="action-btn secondary" id="btn-pause-timer">⏸ Tạm Dừng</button>
+          <button class="action-btn secondary" id="btn-stop-timer">⏹ Dừng</button>
+        </div>
+        <div class="hard-mode-badge hidden" id="hard-mode-badge">🔒 HARD MODE — Không thể dừng!</div>
       </div>
 
       <div class="stats">
@@ -74,12 +159,36 @@
           <span class="stat-text" id="clients-count">Extension: 1 kết nối</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">📡</span>
-          <span class="stat-text">WebSocket: Port 8765</span>
+          <span class="stat-icon">🤖</span>
+          <span class="stat-text" id="ai-provider-text">AI: Đang kiểm tra...</span>
         </div>
       </div>
     </div>
+
+    <!-- Screen 4: Settings -->
+    <div class="content hidden" id="screen-settings">
+      <div class="settings-header">
+        <button class="titlebar-btn back-btn" id="btn-back">←</button>
+        <h2>Cài Đặt Bộ Lọc</h2>
+      </div>
+
+      <div class="settings-body">
+        <div class="settings-group">
+          <p class="settings-title">Danh mục Bỏ Qua Lọc (Bypass)</p>
+          <p class="settings-desc">Cho phép xem video thuộc các danh mục này không cần qua AI kiểm duyệt.</p>
+          
+          <div class="category-grid" id="category-grid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button class="action-btn primary" id="btn-save-settings">Lưu Cài Đặt</button>
+      </div>
+    </div>
   </div>
+  <script src="face-tracker.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
